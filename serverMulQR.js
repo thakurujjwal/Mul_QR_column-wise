@@ -21,7 +21,7 @@ app.post('/api/generate-qrs', async (req, res) => {
         }
 
         const pageWidth = 72 * 72; // 72 inches in points
-        const columnsPerPage = 41; // 41 columns
+        const columnsPerPage = 40; // 41 columns
         const columnWidth = pageWidth / columnsPerPage; // width of each column
         const qrBoxWidth = columnWidth - 20; // leave some padding (10 on each side)
         const qrBoxHeight = 200;
@@ -30,7 +30,9 @@ app.post('/api/generate-qrs', async (req, res) => {
         const paddingY = 60;
         const paddingX = 20; // Padding on the X-axis
         const totalqrheight = qrBoxHeight + paddingY + 10;
-        const pageHeight = totalqrheight * qrPerColumn + 15; // height of the page in points
+        const contentPaddingX = 40; // Padding inside the page on the X-axis
+        const contentPaddingY = 40; // Padding inside the page on the Y-axis
+        const pageHeight = totalqrheight * qrPerColumn + 15 + contentPaddingY; // height of the page in points
 
         const doc = new PDFDocument({ autoFirstPage: false });
         res.writeHead(200, {
@@ -59,8 +61,8 @@ app.post('/api/generate-qrs', async (req, res) => {
                     rowIndex++;
                 }
 
-                const xPosition = columnIndex * columnWidth + paddingX;
-                const yPosition = rowIndex * (qrBoxHeight + paddingY) + paddingY + 20;
+                const xPosition = columnIndex * columnWidth + paddingX + contentPaddingX; // Add content padding on X-axis
+                const yPosition = rowIndex * (qrBoxHeight + paddingY) + paddingY + 20 + contentPaddingY; // Add content padding on Y-axis
 
                 // Draw a dotted border as a separator
                 doc.rect(xPosition - 20, yPosition - 40, qrBoxWidth + 20, qrBoxHeight + 60)
@@ -84,8 +86,8 @@ app.post('/api/generate-qrs', async (req, res) => {
                 const qrData = `QR${qrNumber} ! ${item.PNo} ! ${item.StyleCode} ! ${item.Color} ! ${item.Size}`;
                 const qrCode = await QRCode.toDataURL(qrData);
 
-                const xPosition = columnIndex * columnWidth + paddingX; // Apply padding on X-axis
-                const yPosition = rowIndex * (qrBoxHeight + paddingY) + paddingY + 20; // Adjust yPosition to create top padding
+                const xPosition = columnIndex * columnWidth + paddingX + contentPaddingX; // Apply content padding on X-axis
+                const yPosition = rowIndex * (qrBoxHeight + paddingY) + paddingY + 20 + contentPaddingY; // Apply content padding on Y-axis
 
                 // Draw border
                 doc.rect(xPosition - 20, yPosition - 40, qrBoxWidth + 20, qrBoxHeight + 60).stroke();
