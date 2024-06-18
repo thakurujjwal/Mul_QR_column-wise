@@ -21,9 +21,7 @@ app.post('/api/generate-qrs', async (req, res) => {
         }
 
         const pageWidth = 72 * 72; // 72 inches in points
-        // const pageHeight = 2190.55; // height of the page in points
-
-        const columnsPerPage = 41; // 42 columns
+        const columnsPerPage = 41; // 41 columns
         const columnWidth = pageWidth / columnsPerPage; // width of each column
         const qrBoxWidth = columnWidth - 20; // leave some padding (10 on each side)
         const qrBoxHeight = 200;
@@ -31,8 +29,8 @@ app.post('/api/generate-qrs', async (req, res) => {
         const qrHeight = qrWidth; // make QR square
         const paddingY = 60;
         const paddingX = 20; // Padding on the X-axis
-        const totalqrheight= qrBoxHeight + paddingY +10
-        const pageHeight = totalqrheight *qrPerColumn; // height of the page in points
+        const totalqrheight = qrBoxHeight + paddingY + 10;
+        const pageHeight = totalqrheight * qrPerColumn + 10; // height of the page in points
 
         const doc = new PDFDocument({ autoFirstPage: false });
         res.writeHead(200, {
@@ -44,6 +42,7 @@ app.post('/api/generate-qrs', async (req, res) => {
         let columnIndex = 0;
         let rowIndex = 0;
         let qrCount = 0; // Object to track QR count for each item type
+        let prevItemType = null; // Track previous item type
 
         const addNewPage = () => {
             doc.addPage({ size: [pageWidth, pageHeight] });
@@ -54,24 +53,52 @@ app.post('/api/generate-qrs', async (req, res) => {
         addNewPage(); // Add the first page
 
         for (const item of x) {
-            // qrCount[item.StyleCode] = 0; // Initialize QR count for each item type
+            if (item.StyleCode !== prevItemType) {
+                // Add separator box with text
+                if (rowIndex > 0) {
+                    rowIndex++;
+                }
+
+                const xPosition = columnIndex * columnWidth + paddingX;
+                const yPosition = rowIndex * (qrBoxHeight + paddingY) + paddingY + 20;
+
+                // Draw a dotted border as a separator
+                doc.rect(xPosition - 20, yPosition - 40, qrBoxWidth + 20, qrBoxHeight + 60)
+                    .dash(5, { space: 5 })
+                    .stroke();
+                doc.undash();
+
+                // Add text inside the box
+                doc.text(`New Item Type: ${item.PNo} ! ${item.StyleCode} ! ${item.Color} ! ${item.Size}`, xPosition, yPosition + (qrBoxHeight - qrHeight - 35), {
+                    align: 'center',
+                    width: qrBoxWidth
+                });
+
+                rowIndex++;
+                prevItemType = item.StyleCode;
+            }
 
             for (let i = 0; i < item.TotQty; i++) {
                 qrCount++;
-                // qrCount[item.StyleCode]++; // Increment QR count for the current item type
                 const qrNumber = String(qrCount).padStart(7, '0');
                 const qrData = `QR${qrNumber} ! ${item.PNo} ! ${item.StyleCode} ! ${item.Color} ! ${item.Size}`;
                 const qrCode = await QRCode.toDataURL(qrData);
 
                 const xPosition = columnIndex * columnWidth + paddingX; // Apply padding on X-axis
-                const yPosition = rowIndex * (qrBoxHeight + paddingY) + paddingY;
+                const yPosition = rowIndex * (qrBoxHeight + paddingY) + paddingY + 20; // Adjust yPosition to create top padding
 
-                doc.image(qrCode, xPosition, yPosition, {
+                // Draw border
+                doc.rect(xPosition - 20, yPosition - 40, qrBoxWidth + 20, qrBoxHeight + 60).stroke();
+
+                doc.image(qrCode, xPosition, yPosition + (qrBoxHeight - qrHeight - 35), { // Adjust position to align at the bottom
                     fit: [qrWidth, qrHeight],
                     align: 'center',
                     valign: 'center'
                 });
-                doc.text(qrData, xPosition, yPosition + qrHeight + 10, { align: 'center', width: qrWidth });
+                doc.text(qrData, xPosition, yPosition + qrBoxHeight - 35, { // Adjust position to align text below the QR code
+                    align: 'center',
+                    width: qrWidth
+                });
 
                 rowIndex++;
 
