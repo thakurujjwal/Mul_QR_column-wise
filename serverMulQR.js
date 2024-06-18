@@ -30,7 +30,7 @@ app.post('/api/generate-qrs', async (req, res) => {
         const paddingY = 60;
         const paddingX = 20; // Padding on the X-axis
         const totalqrheight = qrBoxHeight + paddingY + 10;
-        const pageHeight = totalqrheight * qrPerColumn + 10; // height of the page in points
+        const pageHeight = totalqrheight * qrPerColumn + 15; // height of the page in points
 
         const doc = new PDFDocument({ autoFirstPage: false });
         res.writeHead(200, {
