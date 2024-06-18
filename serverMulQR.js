@@ -90,12 +90,12 @@ app.post('/api/generate-qrs', async (req, res) => {
                 // Draw border
                 doc.rect(xPosition - 20, yPosition - 40, qrBoxWidth + 20, qrBoxHeight + 60).stroke();
 
-                doc.image(qrCode, xPosition, yPosition + (qrBoxHeight - qrHeight - 25), { // Adjust position to align at the bottom
+                doc.image(qrCode, xPosition, yPosition + (qrBoxHeight - qrHeight - 35), { // Adjust position to align at the bottom
                     fit: [qrWidth, qrHeight],
                     align: 'center',
                     valign: 'center'
                 });
-                doc.text(qrData, xPosition, yPosition + qrBoxHeight - 25, { // Adjust position to align text below the QR code
+                doc.text(qrData, xPosition, yPosition + qrBoxHeight - 35, { // Adjust position to align text below the QR code
                     align: 'center',
                     width: qrWidth
                 });
