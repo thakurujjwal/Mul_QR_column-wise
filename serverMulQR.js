@@ -21,8 +21,8 @@ app.post('/api/generate-qrs', async (req, res) => {
         }
 
         const pageWidth = 72 * 72; // 72 inches in points
-        const columnsPerPage = 40; // 41 columns
-        const columnWidth = pageWidth / columnsPerPage; // width of each column
+        const columnsPerPage = 41; // 41 columns
+        const columnWidth = (pageWidth / columnsPerPage) - 2; // width of each column
         const qrBoxWidth = columnWidth - 20; // leave some padding (10 on each side)
         const qrBoxHeight = 200;
         const qrWidth = qrBoxWidth - 20; // leave some padding (10 on each side)
@@ -55,7 +55,9 @@ app.post('/api/generate-qrs', async (req, res) => {
         addNewPage(); // Add the first page
 
         for (const item of x) {
-            if (item.StyleCode !== prevItemType) {
+            const currentItemKey = `${item.PNo}-${item.StyleCode}-${item.Color}-${item.Size}`;
+
+            if (currentItemKey !== prevItemType) {
                 // Add separator box with text
                 if (rowIndex > 0) {
                     rowIndex++;
@@ -71,13 +73,16 @@ app.post('/api/generate-qrs', async (req, res) => {
                 doc.undash();
 
                 // Add text inside the box
-                doc.text(`New Item Type: ${item.PNo} ! ${item.StyleCode} ! ${item.Color} ! ${item.Size}`, xPosition, yPosition + (qrBoxHeight - qrHeight - 35), {
+                doc.fillColor('red').text(`New Item Type: ${item.PNo} ! ${item.StyleCode} ! ${item.Color} ! ${item.Size}`, xPosition - 10, (yPosition - qrHeight) - 100, {
                     align: 'center',
-                    width: qrBoxWidth
+                    width: qrBoxWidth,
+                    Color: 'red'
                 });
+                // Reset the color back to default for the rest of the text
+                doc.fillColor('black');
 
-                rowIndex++;
-                prevItemType = item.StyleCode;
+                // rowIndex++;
+                prevItemType = currentItemKey;
             }
 
             for (let i = 0; i < item.TotQty; i++) {
@@ -92,12 +97,12 @@ app.post('/api/generate-qrs', async (req, res) => {
                 // Draw border
                 doc.rect(xPosition - 20, yPosition - 40, qrBoxWidth + 20, qrBoxHeight + 60).stroke();
 
-                doc.image(qrCode, xPosition, yPosition + (qrBoxHeight - qrHeight - 35), { // Adjust position to align at the bottom
+                doc.image(qrCode, xPosition, yPosition + (qrBoxHeight - qrHeight - 75), { // Adjust position to align at the bottom
                     fit: [qrWidth, qrHeight],
                     align: 'center',
                     valign: 'center'
                 });
-                doc.text(qrData, xPosition, yPosition + qrBoxHeight - 35, { // Adjust position to align text below the QR code
+                doc.text(qrData, xPosition, yPosition + qrBoxHeight - 65, { // Adjust position to align text below the QR code
                     align: 'center',
                     width: qrWidth
                 });
