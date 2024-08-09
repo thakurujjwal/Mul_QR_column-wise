@@ -15,10 +15,19 @@ app.get('/', (req, res) => {
 
 app.post('/api/generate-qrs', async (req, res) => {
     try {
-        const { x, qrPerColumn } = req.body;
-        if (!x || !Array.isArray(x) || !qrPerColumn || typeof qrPerColumn !== 'number') {
-            return res.status(400).json({ error: 'Array of data and qrPerColumn required' });
+        // const { x, qrPerColumn } = req.body;
+        // if (!x || !Array.isArray(x) || !qrPerColumn || typeof qrPerColumn !== 'number') {
+        //     return res.status(400).json({ error: 'Array of data and qrPerColumn required' });
+        // }
+
+        const { x } = req.body;
+        if (!x || !Array.isArray(x)) {
+            return res.status(400).json({ error: 'Array of data required' });
         }
+
+        // Calculate total quantity and qrPerColumn
+        const totalQty = x.reduce((sum, item) => sum + item.TotQty, 0);
+        const qrPerColumn = Math.ceil(totalQty / 41)+1;
 
         const pageWidth = 72 * 72; // 72 inches in points
         const columnsPerPage = 41; // 41 columns
