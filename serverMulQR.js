@@ -3,17 +3,18 @@ const QRCode = require('qrcode');
 const PDFDocument = require('pdfkit');
 const cors = require('cors');
 
-const app = express();
-const PORT = process.env.PORT || 4000;
+// const app = express();
+const router = express.Router();
+// const PORT = process.env.PORT || 4000;
 
-app.use(express.json());
-app.use(cors());
+router.use(express.json());
+router.use(cors());
 
-app.get('/', (req, res) => {
+router.get('/', (req, res) => {
     res.send('Welcome to the QR Code Generator API');
 });
 
-app.post('/api/generate-qrs', async (req, res) => {
+router.post('/api/generate-qrs', async (req, res) => {
     try {
         const { x, qrPerColumnReq } = req.body;
         // if (!x || !Array.isArray(x) || !qrPerColumnReq || typeof qrPerColumnReq !== 'number') {
@@ -27,10 +28,10 @@ app.post('/api/generate-qrs', async (req, res) => {
 
         let qrPerColumn;
 
-         // Check if qrPerColumnReq is provided and is a valid number
+        // Check if qrPerColumnReq is provided and is a valid number
         if (typeof qrPerColumnReq === 'number' && qrPerColumnReq > 0) {
             const totalQty = x.reduce((sum, item) => sum + item.TotQty, 0);
-            qrPerColumn =  Math.ceil(totalQty / qrPerColumnReq) ;
+            qrPerColumn = Math.ceil(totalQty / qrPerColumnReq);
         } else {
             // Calculate total quantity and qrPerColumn if not provided or invalid
             const totalQty = x.reduce((sum, item) => sum + item.TotQty, 0);
@@ -46,15 +47,15 @@ app.post('/api/generate-qrs', async (req, res) => {
 
         const pageWidth = 72 * 72; // 72 inches in points
         const columnsPerPage = 41; // 41 columns
-        const columnWidth = (pageWidth / columnsPerPage) - 2; // width of each column
+        const columnWidth = (pageWidth / columnsPerPage) - 2 * 0.7; // width of each column
         const qrBoxWidth = columnWidth - 20; // leave some padding (10 on each side)
-        const qrBoxHeight = 200;
+        const qrBoxHeight = 200 * 0.7;
         const qrWidth = qrBoxWidth - 20; // leave some padding (10 on each side)
         const qrHeight = qrWidth; // make QR square
         const paddingY = 60;
         const paddingX = 20; // Padding on the X-axis
         const totalqrheight = qrBoxHeight + paddingY + 10;
-        const contentPaddingX = 40; // Padding inside the page on the X-axis
+        const contentPaddingX = 60; // Padding inside the page on the X-axis
         const contentPaddingY = 40; // Padding inside the page on the Y-axis
         const pageHeight = totalqrheight * qrPerColumn + 15 + contentPaddingY; // height of the page in points
 
@@ -119,14 +120,21 @@ app.post('/api/generate-qrs', async (req, res) => {
                 const yPosition = rowIndex * (qrBoxHeight + paddingY) + paddingY + 20 + contentPaddingY; // Apply content padding on Y-axis
 
                 // Draw border
-                doc.rect(xPosition - 20, yPosition - 40, qrBoxWidth + 20, qrBoxHeight + 60).stroke();
+                doc.rect(xPosition - 15, yPosition - 40, qrBoxWidth + 10, qrBoxHeight + 60).stroke();
 
-                doc.image(qrCode, xPosition, yPosition + (qrBoxHeight - qrHeight - 75), { // Adjust position to align at the bottom
+                doc.image(qrCode, xPosition, yPosition + (qrBoxHeight - qrHeight - 45), { // Adjust position to align at the bottom
                     fit: [qrWidth, qrHeight],
                     align: 'center',
                     valign: 'center'
                 });
-                doc.text(qrData, xPosition, yPosition + qrBoxHeight - 65, { // Adjust position to align text below the QR code
+                // doc.text(qrData, xPosition, yPosition + qrBoxHeight - 65, { // Adjust position to align text below the QR code
+                //     align: 'center',
+                //     width: qrWidth
+                // });
+                const originalFontSize = 12; // Assuming the original font size is 12 (you can adjust based on your actual size)
+                const reducedFontSize = originalFontSize * 0.7; // Reduce by 30%
+
+                doc.fontSize(10).text(qrData, xPosition, yPosition + qrBoxHeight - 45, { // Adjust position to align text below the QR code
                     align: 'center',
                     width: qrWidth
                 });
@@ -159,6 +167,7 @@ app.post('/api/generate-qrs', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// app.listen(PORT, () => {
+//     console.log(`Server is running on port ${PORT}`);
+// });
+module.exports = router;
