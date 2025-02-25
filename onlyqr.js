@@ -39,7 +39,7 @@ router.post('/api/generate-pdf', async (req, res) => {
     let row = 0, col = 0;
 
     const drawQRWithLabel = async (doc, qrData, currentNum, x, y, qrSize, qrBoxSize, qrBoxHeight) => {
-        const qrString = `${currentNum} ! ${qrData.PNo} ! ${qrData.StyleCode} !  ${qrData.Color} ! ${qrData.Size} !  ${qrData.BNo} `;
+        const qrString = `${currentNum} ! ${qrData.PNo} ! ${qrData.StyleCode} ! ${qrData.Color} ! ${qrData.Size} ! ${qrData.BNo}`;
 
         // Generate the QR code image as a base64 string
         const qrCodeDataUrl = await QRCode.toDataURL(qrString, { errorCorrectionLevel: 'M', width: qrSize });
