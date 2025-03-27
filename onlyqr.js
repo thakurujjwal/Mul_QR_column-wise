@@ -84,7 +84,6 @@
 
 
 // module.exports = router;
-
 const express = require('express');
 const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
@@ -102,24 +101,25 @@ router.post('/api/generate-pdf', async (req, res) => {
     }
 
     const mmToPoints = 2.83465;
-    const qrSize = 37 * mmToPoints; // QR size in mm
+    const qrSize = 34 * mmToPoints; // QR size in mm
     const textHeight = 8 * mmToPoints; // Estimated text height
-    const spacing = 40 * mmToPoints; // Space between QR codes
-    const margin = 2 * mmToPoints; // Page margin
+    const spacing = 20 * mmToPoints; // Space between QR codes
+    const topMargin = 20 * mmToPoints; // Margin on top of QR code
+    const pageMargin = 2 * mmToPoints; // Page margin
 
     let totalQRCodes = qrDataArray.reduce((sum, qrData) => sum + (qrData.RTo - qrData.RFr + 1), 0);
-    let pageHeight = margin + totalQRCodes * (qrSize + textHeight + spacing) + margin;
+    let pageHeight = pageMargin + totalQRCodes * (qrSize + textHeight + spacing) + pageMargin;
 
     const doc = new PDFDocument({
-        size: [qrSize + (2 * margin), pageHeight],
-        margins: { top: margin, bottom: margin, left: margin, right: margin }
+        size: [qrSize + (2 * pageMargin), pageHeight],
+        margins: { top: pageMargin, bottom: pageMargin, left: pageMargin, right: pageMargin }
     });
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=qr_labels.pdf');
     doc.pipe(res);
 
-    let y = margin;
+    let y = pageMargin;
 
     const drawQR = async (qrData, currentNum) => {
         const qrString = `${currentNum} ! ${qrData.PNo} ! ${qrData.StyleCode} ! ${qrData.Color} ! ${qrData.Size} ! ${qrData.BNo}`;
@@ -132,19 +132,22 @@ router.post('/api/generate-pdf', async (req, res) => {
 
         const base64Data = qrCodeDataUrl.replace(/^data:image\/png;base64,/, '');
 
-        doc.image(Buffer.from(base64Data, 'base64'), margin, y, { fit: [qrSize, qrSize] });
+        // Add margin before QR image
+        y += topMargin;
+
+        doc.image(Buffer.from(base64Data, 'base64'), pageMargin, y, { fit: [qrSize, qrSize] });
 
         doc.fontSize(8)
             .text(`BNo: ${qrData.BNo} | Style: ${qrData.StyleCode} | Size: ${qrData.Size} | Color: ${qrData.Color} | QR No: ${currentNum}`,
-                margin, y + qrSize + 2,
+                pageMargin, y + qrSize + 2,
                 { width: qrSize, align: 'center' });
 
         y += qrSize + textHeight + spacing;
 
         // Draw a dashed line separator
-        doc.moveTo(margin, y - (spacing / 2)) // Start position
-            .lineTo(qrSize + margin, y - (spacing / 2)) // End position
-            .dash(5, { space: 3 }) // Dotted pattern
+        doc.moveTo(pageMargin, y - (spacing / 2))
+            .lineTo(qrSize + pageMargin, y - (spacing / 2))
+            .dash(5, { space: 3 })
             .stroke();
     };
 
