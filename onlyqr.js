@@ -101,11 +101,11 @@ router.post('/api/generate-pdf', async (req, res) => {
     }
 
     const mmToPoints = 2.83465;
-    const qrSize = 34 * mmToPoints; // QR size in mm
+    const qrSize = 20 * mmToPoints; // QR size in mm
     const textHeight = 8 * mmToPoints; // Estimated text height
-    const spacing = 20 * mmToPoints; // Space between QR codes
-    const topMargin = 20 * mmToPoints; // Margin on top of QR code
-    const pageMargin = 2 * mmToPoints; // Page margin
+    const spacing = 25 * mmToPoints; // Space between QR codes
+    // const topMargin = 1 * mmToPoints; // Margin on top of QR code
+    const pageMargin = 5 * mmToPoints; // Page margin
 
     let totalQRCodes = qrDataArray.reduce((sum, qrData) => sum + (qrData.RTo - qrData.RFr + 1), 0);
     let pageHeight = pageMargin + totalQRCodes * (qrSize + textHeight + spacing) + pageMargin;
@@ -133,7 +133,7 @@ router.post('/api/generate-pdf', async (req, res) => {
         const base64Data = qrCodeDataUrl.replace(/^data:image\/png;base64,/, '');
 
         // Add margin before QR image
-        y += topMargin;
+        // y += topMargin;
 
         doc.image(Buffer.from(base64Data, 'base64'), pageMargin, y, { fit: [qrSize, qrSize] });
 
