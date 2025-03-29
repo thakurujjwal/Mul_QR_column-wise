@@ -208,7 +208,7 @@ router.post('/api/generate-pdf', async (req, res) => {
         doc.image(Buffer.from(base64Data, 'base64'), pageMargin, pageMargin, { fit: [qrSize, qrSize] });
 
         doc.fontSize(6)
-            .text(`BNo: ${qrData.BNo} | Style: ${qrData.StyleCode} | Size: ${qrData.Size} | Color: ${qrData.Color} | QR No: ${currentNum}`, 
+            .text(`BNo: ${qrData.BNo} | PNo: ${qrData.PNo} | Style: ${qrData.StyleCode} | PONo: ${qrData.BPONo} | Size: ${qrData.Size} | Color: ${qrData.Color} | QR No: ${currentNum}`, 
                 pageMargin, pageMargin + qrSize + spacing, 
                 { width: qrSize, align: 'center' });
     };
