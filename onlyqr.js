@@ -190,8 +190,8 @@ router.post('/api/generate-pdf', async (req, res) => {
     doc.pipe(res);
 
     const drawQR = async (qrData, currentNum) => {
-        const qrString = `${currentNum} ! ${qrData.PNo} ! ${qrData.StyleCode} ! ${qrData.Color} ! ${qrData.Size} ! ${qrData.BNo}`;
-        
+        const qrString = `${currentNum} ! ${qrData.PNo} ! ${qrData.StyleCode} ! ${qrData.Color} ! ${qrData.Size} ! ${qrData.BNo} ! ${qrData.MBNo}`;
+
         const qrCodeDataUrl = await QRCode.toDataURL(qrString, {
             errorCorrectionLevel: 'H',
             width: 600,
@@ -199,8 +199,8 @@ router.post('/api/generate-pdf', async (req, res) => {
         });
 
         const base64Data = qrCodeDataUrl.replace(/^data:image\/png;base64,/, '');
-        
-        const pageHeight = qrSize + textHeight + spacing + (6 * pageMargin)+pageMargin;
+
+        const pageHeight = qrSize + textHeight + spacing + (6 * pageMargin) + pageMargin;
 
         // Add a new page for each QR code
         doc.addPage({ size: [pageWidth, pageHeight], margins: { top: pageMargin, bottom: pageMargin, left: pageMargin, right: pageMargin } });
@@ -208,8 +208,8 @@ router.post('/api/generate-pdf', async (req, res) => {
         doc.image(Buffer.from(base64Data, 'base64'), pageMargin, pageMargin, { fit: [qrSize, qrSize] });
 
         doc.fontSize(6)
-            .text(`BNo: ${qrData.BNo} | PNo: ${qrData.PNo} | Style: ${qrData.StyleCode} | PONo: ${qrData.BPONo} | Size: ${qrData.Size} | Color: ${qrData.Color} | QR No: ${currentNum}`, 
-                pageMargin, pageMargin + qrSize + spacing, 
+            .text(`BNo: ${qrData.BNo} | MBNo: ${qrData.MBNo} | PNo: ${qrData.PNo} | Style: ${qrData.StyleCode} | PONo: ${qrData.BPONo} | Size: ${qrData.Size} | Color: ${qrData.Color} | QR No: ${currentNum}`,
+                pageMargin, pageMargin + qrSize + spacing,
                 { width: qrSize, align: 'center' });
     };
 
